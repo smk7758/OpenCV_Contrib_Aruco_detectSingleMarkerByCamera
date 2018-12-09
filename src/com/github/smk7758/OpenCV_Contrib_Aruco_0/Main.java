@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 	public static boolean debugMode = true;
+	public static Stage primaryStage = null;
 
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -22,6 +23,7 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		Main.primaryStage = primaryStage;
 		try {
 			Scene scene = new Scene(FXMLLoader.load(getClass().getResource("window.fxml")));
 			// FXMLLoader loader = new FXMLLoader(getClass().getResource("MemoWriter_0.0.1.fxml"));

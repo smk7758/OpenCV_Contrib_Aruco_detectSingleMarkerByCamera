@@ -7,7 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.image.ImageView;
 
 public class Controller {
-	MarkerDetector markerDetector = null;
+	MarkerDetectorService markerDetectorService = null;
 	AnimationTimer imageAnimation = null;
 
 	@FXML
@@ -15,22 +15,24 @@ public class Controller {
 
 	@FXML
 	public void initialize() {
-		markerDetector = new MarkerDetector(Aruco.getPredefinedDictionary(Aruco.DICT_4X4_50));
+		markerDetectorService = new MarkerDetectorService(Aruco.getPredefinedDictionary(Aruco.DICT_4X4_50));
+
+		// imageView.setPreserveRatio(true);
+		// imageView.fitWidthProperty().bind(Main.primaryStage.widthProperty());
 
 		imageAnimation = new AnimationTimer() {
 			@Override
 			public void handle(long now) {
-				imageView.setImage(markerDetector.getLastValue());
+				imageView.setImage(markerDetectorService.getLastValue());
 			}
 		};
-
 	}
 
 	@FXML
 	public void onStartButton() {
 		Main.printDebug("startButton");
 		imageAnimation.start();
-		if (!markerDetector.isRunning()) markerDetector.start();
+		if (!markerDetectorService.isRunning()) markerDetectorService.start();
 		// markerDetector.start();
 	}
 
@@ -38,8 +40,9 @@ public class Controller {
 	public void onStopButton() {
 		Main.printDebug("stopButton");
 		imageAnimation.stop();
-		markerDetector.cancel();
+		markerDetectorService.cancel();
 
+		markerDetectorService.reset();
 		imageView.setImage(null);
 	}
 

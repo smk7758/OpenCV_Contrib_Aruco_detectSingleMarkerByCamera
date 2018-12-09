@@ -17,15 +17,21 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 
-public class MarkerDetector extends ScheduledService<Image> {
+public class MarkerDetectorService extends ScheduledService<Image> {
 	final Dictionary dictionary;
+	// Mat inputImage;
+	// List<Mat> corners;
+	// Mat markerIds;
 
-	VideoCapture vc = new VideoCapture();
+	static final int provisionalCameraNumber = 0;
+
+	VideoCapture vc = null;
 	int cameraNumber = 0;
 
-	public MarkerDetector(Dictionary dictionary) {
+	public MarkerDetectorService(Dictionary dictionary, int cameraNumber) {
 		this.dictionary = dictionary;
-		vc.open(cameraNumber);
+		this.cameraNumber = cameraNumber;
+		initialize();
 
 		this.setOnCancelled(new EventHandler<WorkerStateEvent>() {
 			@Override
@@ -33,6 +39,28 @@ public class MarkerDetector extends ScheduledService<Image> {
 				vc.release();
 			}
 		});
+	}
+
+	public MarkerDetectorService(Dictionary dictionary) {
+		this(dictionary, provisionalCameraNumber);
+	}
+
+	public void initialize() {
+		vc = new VideoCapture();
+		vc.open(cameraNumber);
+	}
+
+	@Override
+	public void reset() {
+		super.reset();
+
+		initialize();
+	}
+
+	@Override
+	public boolean cancel() {
+		Main.printDebug("Service is stopped.");
+		return super.cancel();
 	}
 
 	@Override
@@ -43,11 +71,16 @@ public class MarkerDetector extends ScheduledService<Image> {
 				if (!vc.isOpened()) {
 					System.err.println("VC is not opened.");
 					this.cancel();
+					return null;
 				}
 
 				Mat inputImage = new Mat();
 
-				vc.read(inputImage);
+				if (!vc.read(inputImage) || inputImage == null) {
+					System.err.println("Cannot load camera image.");
+					this.cancel();
+					return null;
+				}
 
 				List<Mat> corners = new ArrayList<>();
 				Mat markerIds = new Mat();

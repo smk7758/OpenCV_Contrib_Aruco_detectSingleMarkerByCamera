@@ -1,8 +1,11 @@
 package com.github.smk7758.OpenCV_Contrib_Aruco_0;
 
 import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.Dictionary;
@@ -27,6 +30,10 @@ public class MarkerDetectorService extends ScheduledService<Image> {
 
 	VideoCapture vc = null;
 	int cameraNumber = 0;
+	final Path filePath = Paths.get("S:\\CameraCaliblation\\CameraCalibration_2018-12-31.xml");
+	final Map<String, Mat> calibrationMats = MatIO.loadMat(filePath);
+	Mat cameraMatrix = calibrationMats.get("CameraMatrix"),
+			distortionCoefficients = calibrationMats.get("DistortionCoefficients");
 
 	public MarkerDetectorService(Dictionary dictionary, int cameraNumber) {
 		this.dictionary = dictionary;
@@ -88,6 +95,15 @@ public class MarkerDetectorService extends ScheduledService<Image> {
 				Aruco.detectMarkers(inputImage, dictionary, corners, markerIds);
 
 				Aruco.drawDetectedMarkers(inputImage, corners, markerIds);
+
+				Mat rotationMatrix = new Mat(), translationVectors = new Mat(); // 受け取る
+				Aruco.estimatePoseSingleMarkers(corners, 0.05f, cameraMatrix, distortionCoefficients,
+						rotationMatrix, translationVectors);
+
+				for (int i = 0; i < markerIds.size().height; i++) { // TODO
+					Aruco.drawAxis(inputImage, cameraMatrix, distortionCoefficients,
+							rotationMatrix, translationVectors, 0.1f);
+				}
 
 				return convertMatToImage(inputImage);
 			}

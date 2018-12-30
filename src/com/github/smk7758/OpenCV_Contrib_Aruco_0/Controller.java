@@ -18,7 +18,6 @@ public class Controller {
 		markerDetectorService = new MarkerDetectorService(Aruco.getPredefinedDictionary(Aruco.DICT_4X4_50));
 
 		// imageView.setPreserveRatio(true);
-		// imageView.fitWidthProperty().bind(Main.primaryStage.widthProperty());
 
 		imageAnimation = new AnimationTimer() {
 			@Override
@@ -34,6 +33,8 @@ public class Controller {
 		imageAnimation.start();
 		if (!markerDetectorService.isRunning()) markerDetectorService.start();
 		// markerDetector.start();
+
+		// imageView.fitWidthProperty().bind(markerDetectorService.getLastValue().widthProperty().subtract(20));
 	}
 
 	@FXML
